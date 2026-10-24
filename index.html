@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Research calculator for three- and five-year all-cause mortality risk in older adults.">
+  <title>Older Adult Survival Risk Calculator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar"><div class="wrap topbar-inner"><div class="brand"><span class="brand-mark">◉</span><span>Survival Risk Research Calculator</span></div><a href="#about">About the model ↗</a></div></header>
+  <main class="wrap">
+    <section class="intro">
+      <div class="eyebrow">Research model · Cox elastic net</div>
+      <h1>Estimate <em>3- and 5-year</em><br>all-cause mortality risk</h1>
+      <div class="intro-facts"><span>Research population: age ≥ 60 years</span><span>Development: CHARLS · ELSA · KLoSA</span><span>External validation: HRS</span></div>
+    </section>
+    <div class="layout">
+      <section class="panel form-panel" aria-labelledby="form-title">
+        <div class="panel-heading"><div><div class="step">01 / Enter data</div><h2 id="form-title">Baseline predictors</h2></div><span class="required-note">All fields required</span></div>
+        <form id="risk-form">
+          <h3>Source cohort and demographics</h3>
+          <div class="fields">
+            <label>Source cohort <small>Sets raw score ranges only</small><select name="cohort" required><option value="">Select a cohort</option><option value="CHARLS">CHARLS · China</option><option value="ELSA">ELSA · England</option><option value="HRS">HRS · United States</option><option value="KLoSA">KLoSA · South Korea</option></select></label>
+            <label>Age <small>Years, 60–103</small><input name="age" type="number" min="60" max="103" step="1" required placeholder="For example, 68"></label>
+            <label>Sex <small>Study coding</small><select name="sex" required><option value="">Select</option><option value="0">Female</option><option value="1">Male</option></select></label>
+            <label>Education<select name="education" required><option value="">Select</option><option value="1">Primary school or below</option><option value="2">Secondary school</option><option value="3">College or above</option></select></label>
+            <label>Number of living children<input name="child_count" type="number" min="0" max="12" step="1" required placeholder="0–12"></label>
+            <label>Income group <small>See definition below</small><select name="income_quartile" required><option value="">Select</option><option value="1">Q1 · Zero income</option><option value="2">Q2 · Lower third of positive income</option><option value="3">Q3 · Middle third of positive income</option><option value="4">Q4 · Upper third of positive income</option></select></label>
+            <label>Married or partnered<select name="married_partnered" required><option value="">Select</option><option value="0">No</option><option value="1">Yes</option></select></label>
+          </div>
+          <h3>Lifestyle and health</h3>
+          <div class="fields">
+            <label>Currently working<select name="currently_working" required><option value="">Select</option><option value="0">No</option><option value="1">Yes</option></select></label>
+            <label>Currently smoking<select name="current_smoking" required><option value="">Select</option><option value="0">No</option><option value="1">Yes</option></select></label>
+            <label>Current or recent alcohol use<select name="current_drinking" required><option value="">Select</option><option value="0">No</option><option value="1">Yes</option></select></label>
+            <label>Self-rated health<select name="self_rated_health" required><option value="">Select</option><option value="1">1 · Excellent</option><option value="2">2 · Very good</option><option value="3">3 · Good</option><option value="4">4 · Fair</option><option value="5">5 · Poor</option></select></label>
+            <label>Number of chronic conditions <small>0–6</small><input name="chronic_count" type="number" min="0" max="6" step="1" required placeholder="0–6"></label>
+          </div>
+          <h3>Function and raw scale scores</h3>
+          <div class="fields">
+            <label>ADL limitation count <small>0–5</small><input name="adl_count" type="number" min="0" max="5" step="1" required placeholder="0–5"></label>
+            <label>IADL limitation count <small>0–5</small><input name="iadl_count" type="number" min="0" max="5" step="1" required placeholder="0–5"></label>
+            <label>Depressive symptom score <small id="depression-range">Select a cohort for the raw score range</small><input name="depression_raw" type="number" min="0" step="1" required placeholder="Raw score"></label>
+            <label>Cognitive function score <small id="cognition-range">Select a cohort for the raw score range</small><input name="cognition_raw" type="number" min="0" step="1" required placeholder="Raw score"></label>
+          </div>
+          <div class="form-note">Enter original total scores, before 0–1 normalization. The selected cohort sets each scale's maximum; the calculator divides the raw total by that maximum before prediction. Use scores constructed with the study's cohort-specific items.</div>
+          <details class="scoring"><summary>How the raw scores are interpreted</summary><div><p><strong>Depressive symptoms:</strong> CHARLS and KLoSA use CES-D 0–30; ELSA and HRS use CES-D 0–8.</p><p><strong>Cognition:</strong> CHARLS uses a 0–20 composite; ELSA a 0–24 composite; HRS the 0–27 cognition summary; KLoSA a 0–30 K-MMSE component total. These totals must follow the study's component rules, not another scale with the same maximum.</p><p><strong>Income:</strong> Q1 is exactly zero income. Positive incomes are split into thirds within each cohort to obtain Q2–Q4. There is no universal currency cutoff.</p></div></details>
+          <button type="submit" class="primary">Calculate research estimate <span>→</span></button>
+          <p id="form-error" class="error" role="alert" hidden></p>
+        </form>
+      </section>
+      <aside class="side">
+        <section class="panel result-panel" aria-live="polite"><div class="step">02 / Model output</div><h2>Estimated risk</h2>
+          <div id="empty-result" class="empty"><div class="empty-icon">◎</div><p>Complete the form to view<br>3- and 5-year estimates.</p></div>
+          <div id="result" hidden><div class="result-grid"><div class="metric"><span>3-year all-cause mortality risk</span><strong id="risk3">—</strong></div><div class="metric"><span>5-year all-cause mortality risk</span><strong id="risk5">—</strong></div></div><div class="chart-title">Estimated survival over time</div><svg id="chart" viewBox="0 0 400 210" role="img" aria-label="Estimated survival curve"></svg><div class="result-caption">Arithmetic mean of five saved CoxNet model probabilities.</div></div>
+        </section>
+      </aside>
+    </div>
+    <section id="about" class="about"><div class="eyebrow">Model provenance</div><h2>About this research tool</h2><div class="about-grid"><p>The underlying study included 46,023 participants from four ageing cohorts in China, England, South Korea and the United States. CHARLS, ELSA and KLoSA were used for development; HRS was reserved for external validation. Cox elastic net was the primary model selected by the prespecified cross-validation rule.</p><p>This page uses coefficients, scaling parameters and baseline survival functions exported from the five saved CoxNet models fitted for external validation. Complete input is required, so this interface does not perform the original missing-data imputation. The source cohort selects raw-score conversion only; it does not select a cohort-specific prediction model.</p></div></section>
+  </main>
+  <script src="app.js" defer></script>
+</body>
+</html>
